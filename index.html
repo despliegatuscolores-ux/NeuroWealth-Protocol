@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroWealth Protocol | Reprogramación Financiera Cognitiva</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neuro: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6', // Violet
+                            600: '#7c3aed',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                        wealth: {
+                            500: '#10b981', // Emerald
+                            600: '#059669',
+                        },
+                        slate: {
+                            850: '#152033',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.4s ease, transform 0.4s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(15px); }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-slate-900 dark:text-gray-100 font-sans antialiased transition-colors duration-300" 
+      x-data="neuroWealthApp()" 
+      x-init="initApp()"
+      :class="{ 'dark': isDarkMode }">
+
+    <!-- Navegación -->
+    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-network-wired text-neuro-600 dark:text-neuro-500 text-2xl mr-3"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900 dark:text-white">Neuro<span class="text-neuro-600 dark:text-neuro-500">Wealth</span> Protocol</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-1">
+                    <template x-for="tab in tabs" :key="tab.id">
+                        <button @click="changeTab(tab.id)" 
+                                :class="currentTab === tab.id ? 'bg-neuro-50 text-neuro-700 dark:bg-slate-800 dark:text-neuro-400' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800'"
+                                class="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            <i :class="tab.icon" class="mr-2"></i><span x-text="tab.name"></span>
+                        </button>
+                    </template>
+                    <button @click="toggleTheme()" class="ml-4 p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <i class="fa-solid" :class="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center md:hidden">
+                    <button @click="toggleTheme()" class="mr-2 p-2 text-gray-500 dark:text-gray-400">
+                        <i class="fa-solid" :class="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
+                    </button>
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 dark:text-gray-300 hover:text-white">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div x-show="mobileMenuOpen" x-cloak class="md:hidden bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <template x-for="tab in tabs" :key="tab.id">
+                    <button @click="changeTab(tab.id); mobileMenuOpen = false" 
+                            :class="currentTab === tab.id ? 'bg-neuro-50 text-neuro-700 dark:bg-slate-800 dark:text-neuro-400' : 'text-gray-600 dark:text-gray-300'"
+                            class="block w-full text-left px-3 py-2 rounded-md text-base font-medium">
+                        <i :class="tab.icon" class="mr-2 w-5 text-center"></i><span x-text="tab.name"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 custom-scrollbar">
+
+        <!-- ========================================== -->
+        <!-- FASE 1: ESCÁNER SUBCONSCIENTE (TEST)       -->
+        <!-- ========================================== -->
+        <div x-show="currentTab === 'scanner'" x-transition:enter="fade-enter-active" x-transition:enter-start="fade-enter-from" x-cloak>
+            
+            <div x-show="!quizStarted && !quizCompleted" class="text-center max-w-3xl mx-auto py-12">
+                <div class="inline-block p-4 rounded-full bg-neuro-100 dark:bg-neuro-900/30 text-neuro-600 dark:text-neuro-500 mb-6">
+                    <i class="fa-solid fa-brain text-4xl"></i>
+                </div>
+                <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl mb-6 text-gray-900 dark:text-white">
+                    Desinstala tu <span class="text-transparent bg-clip-text bg-gradient-to-r from-neuro-500 to-wealth-500">Programación de Escasez</span>
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+                    La diferencia entre la libertad financiera y el estancamiento no es matemática, es neurológica. Tu entorno, tu familia y tus experiencias pasadas han instalado "scripts" subconscientes en tu cerebro. Este escáner identificará qué patrones ocultos están bloqueando tu capacidad para generar y retener valor.
+                </p>
+                <button @click="startQuiz()" class="px-8 py-4 bg-neuro-600 hover:bg-neuro-700 text-white rounded-lg font-semibold text-lg shadow-lg hover:shadow-neuro-500/30 transition-all transform hover:-translate-y-1">
+                    Iniciar Escáner Cognitivo
+                </button>
+            </div>
+
+            <div x-show="quizCompleted" class="text-center max-w-2xl mx-auto py-20">
+                <i class="fa-solid fa-microchip text-5xl text-neuro-500 mb-6"></i>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Mapeo Completado</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8">
+                    Tus redes sinápticas asociadas al dinero han sido analizadas. Si deseas reiniciar tu proceso de evaluación basal, puedes formatear los datos.
+                </p>
+                <button @click="resetQuiz()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-200 text-white rounded-lg font-bold shadow transition-colors">
+                    Formatear Datos e Iniciar Nuevo Escaneo
+                </button>
+            </div>
+
+            <!-- Interfaz del Test -->
+            <div x-show="quizStarted && !quizCompleted" class="max-w-3xl mx-auto bg-white dark:bg-slate-850 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden">
+                <div class="bg-gray-50 dark:bg-slate-800 px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center"><i class="fa-solid fa-spinner fa-spin mr-2 text-neuro-500"></i> Analizando patrones...</span>
+                    <span class="text-sm font-bold text-neuro-600 dark:text-neuro-400" x-text="`${currentQuestionIndex + 1} / ${questions.length}`"></span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 h-2">
+                    <div class="bg-gradient-to-r from-neuro-500 to-wealth-500 h-2 transition-all duration-500 ease-out" :style="`width: ${((currentQuestionIndex) / questions.length) * 100}%`"></div>
+                </div>
+                
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white leading-snug" x-text="questions[currentQuestionIndex].text"></h3>
+                    
+                    <div class="space-y-4">
+                        <template x-for="(option, index) in questions[currentQuestionIndex].options" :key="index">
+                            <button @click="selectAnswer(option)" 
+                                    class="w-full text-left p-5 rounded-xl border-2 border-gray-100 dark:border-slate-700 hover:border-neuro-500 dark:hover:border-neuro-500 hover:bg-neuro-50 dark:hover:bg-slate-800 transition-all group flex items-center justify-between">
+                                <span class="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white font-medium" x-text="option.text"></span>
+                                <i class="fa-solid fa-arrow-right text-gray-300 dark:text-gray-600 group-hover:text-neuro-500 transition-colors"></i>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- FASE 2: TOPOGRAFÍA NEURAL (RESULTADOS)     -->
+        <!-- ========================================== -->
+        <div x-show="currentTab === 'results'" x-transition:enter="fade-enter-active" x-transition:enter-start="fade-enter-from" x-cloak>
+            <div x-show="!quizCompleted" class="text-center py-20">
+                <i class="fa-solid fa-lock text-5xl text-gray-300 dark:text-slate-600 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-600 dark:text-gray-400">Datos Insuficientes</h2>
+                <p class="text-gray-500 mt-2">Completa el escáner subconsciente para mapear tus creencias.</p>
+                <button @click="changeTab('scanner')" class="mt-6 text-neuro-600 hover:text-neuro-700 font-medium underline">Ir al Escáner</button>
+            </div>
+
+            <div x-show="quizCompleted">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Gráfico -->
+                    <div class="w-full md:w-1/2 bg-white dark:bg-slate-850 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-800 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none"><i class="fa-solid fa-fingerprint text-9xl"></i></div>
+                        <h2 class="text-xl font-bold mb-2 flex items-center"><i class="fa-solid fa-chart-radar mr-2 text-neuro-500"></i> Topografía de Limitaciones</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Porcentaje de fricción cognitiva detectada. Un porcentaje alto indica un bloqueo subconsciente fuerte en esa área.</p>
+                        <div class="relative h-80 w-full flex justify-center items-center">
+                            <canvas id="mindsetRadarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Análisis -->
+                    <div class="w-full md:w-1/2 space-y-4">
+                        <h2 class="text-xl font-bold mb-4">Diagnóstico de Paradigmas</h2>
+                        <div class="h-[400px] overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                            <template x-for="(score, key) in calculatedScores" :key="key">
+                                <div class="bg-white dark:bg-slate-850 p-5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1" :class="getSeverityColor(score)"></div>
+                                    
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h4 class="font-bold text-gray-900 dark:text-white capitalize" x-text="categoryDefinitions[key].name"></h4>
+                                        <span class="px-2 py-1 rounded text-xs font-bold" :class="getSeverityBg(score)" x-text="score + '% Fricción'"></span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3" x-text="categoryDefinitions[key].desc"></p>
+                                    
+                                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg text-sm border-l-2 border-neuro-500 mt-2">
+                                        <span class="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                                            <i class="fa-solid fa-code-compare text-neuro-500 mr-1"></i> Sustitución Recomendada:
+                                        </span>
+                                        <span class="text-gray-600 dark:text-gray-400 italic" x-text="categoryDefinitions[key].reframing"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- FASE 3: LABORATORIO DE REPROGRAMACIÓN      -->
+        <!-- ========================================== -->
+        <div x-show="currentTab === 'toolkit'" x-transition:enter="fade-enter-active" x-transition:enter-start="fade-enter-from" x-cloak>
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">Taller de Reestructuración</h2>
+                <p class="text-gray-600 dark:text-gray-400">Ejercicios neuro-cognitivos diseñados para desarticular la culpa financiera, reescribir traumas heredados y sintonizar tu atención hacia la abundancia (reconocimiento de oportunidades).</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Reframing -->
+                <div class="bg-white dark:bg-slate-850 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-neuro-100 dark:bg-neuro-900/30 text-neuro-600 dark:text-neuro-400 rounded-lg flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Reencuadre de Creencias Raíz</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Tu mente cree lo que te repites. Transformaremos una afirmación de escasez (baja frecuencia) en un axioma de oportunidad.</p>
+                    
+                    <div class="space-y-3 mt-4 text-sm">
+                        <div class="p-3 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg text-gray-700 dark:text-gray-300">
+                            <strong>Creencia Detectada:</strong> "No me lo puedo permitir / Es muy caro para mí."
+                        </div>
+                        <div class="text-center text-gray-400"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="p-3 bg-wealth-50 dark:bg-wealth-900/10 border border-wealth-100 dark:border-wealth-900/30 rounded-lg text-gray-700 dark:text-gray-300">
+                            <strong>Nuevo Script Mental:</strong> "¿Cómo puedo estructurar mis finanzas o generar el valor suficiente para permitírmelo?"
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perdón Financiero -->
+                <div class="bg-white dark:bg-slate-850 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-link-slash"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Protocolo de Desapego (Sanación)</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">La culpa por malas decisiones pasadas o la carga de la pobreza familiar bloquea la toma de decisiones racionales hoy.</p>
+                    <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 italic border-l-4 border-blue-500">
+                        "Libero a mis padres y a mi entorno de las creencias de escasez que me transmitieron, hacían lo que podían con su nivel de consciencia. Me perdono por las malas inversiones pasadas; pagué por una lección. Hoy, mi historial financiero está en blanco."
+                    </div>
+                </div>
+
+                <!-- Auditoría de Entorno -->
+                <div class="bg-white dark:bg-slate-850 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-people-arrows"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Auditoría de Entorno (Neuronas Espejo)</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Nos convertimos en la media de las 5 personas con las que más interactuamos debido a la imitación cognitiva subconsciente.</p>
+                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
+                        <ul class="text-sm space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><i class="fa-solid fa-circle-xmark text-red-500 mr-2"></i> Identifica quién en tu entorno se queja del dinero o resiente a los ricos. Reduce la exposición.</li>
+                            <li><i class="fa-solid fa-circle-check text-wealth-500 mr-2"></i> Identifica quién habla de ideas, proyectos y crecimiento. Aumenta la exposición.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Ledger de Gratitud / Enfoque -->
+                <div class="bg-white dark:bg-slate-850 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-wealth-100 dark:bg-wealth-900/30 text-wealth-600 dark:text-wealth-400 rounded-lg flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-book-journal-whills"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Libro Mayor de Abundancia</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">El cerebro pobre busca amenazas (escasez). El cerebro rico busca oportunidades. Entrenaremos tu Sistema Activador Reticular (SAR).</p>
+                    <div class="space-y-2 mt-2">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ejercicio Diario:</p>
+                        <textarea class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg p-3 text-sm focus:ring-2 focus:ring-wealth-500 focus:outline-none dark:text-white placeholder-gray-400" rows="2" placeholder="Escribe aquí 3 cosas de valor que recibiste hoy (un consejo, un café, un ingreso)..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- FASE 4: INTEGRACIÓN (PLAN 21 DÍAS)         -->
+        <!-- ========================================== -->
+        <div x-show="currentTab === 'plan'" x-transition:enter="fade-enter-active" x-transition:enter-start="fade-enter-from" x-cloak>
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Tu Protocolo Operativo</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Consolida tus nuevos circuitos neuronales. La neuroplasticidad requiere repetición.</p>
+                    </div>
+                    <button @click="exportPlan()" class="hidden md:flex px-4 py-2 bg-neuro-600 hover:bg-neuro-700 text-white font-bold rounded-lg shadow-lg transition-colors items-center">
+                        <i class="fa-solid fa-file-export mr-2"></i> Exportar Protocolo
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-slate-850 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 md:p-8">
+                    
+                    <div x-show="quizCompleted" class="mb-6 bg-neuro-50 dark:glass-panel p-5 rounded-lg border-l-4 border-neuro-500">
+                        <h4 class="text-sm font-bold text-neuro-800 dark:text-neuro-300 mb-2"><i class="fa-solid fa-bolt mr-1"></i> Directiva Principal Basada en tu Escáner:</h4>
+                        <p class="text-sm text-gray-700 dark:text-gray-300" x-text="getPersonalizedRuleSuggestion()"></p>
+                    </div>
+
+                    <textarea x-model="userPlan" 
+                              class="w-full h-96 bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-xl p-6 font-mono text-sm leading-relaxed focus:ring-2 focus:ring-neuro-500 focus:outline-none dark:text-gray-300 custom-scrollbar resize-none"
+                              placeholder="Escribe tu protocolo..."></textarea>
+                    
+                    <button @click="exportPlan()" class="md:hidden mt-4 w-full px-4 py-3 bg-neuro-600 hover:bg-neuro-700 text-white font-bold rounded-lg shadow-lg transition-colors flex justify-center items-center">
+                        <i class="fa-solid fa-file-export mr-2"></i> Exportar Protocolo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Lógico Alpine.js -->
+    <script>
+        function neuroWealthApp() {
+            return {
+                isDarkMode: true,
+                currentTab: 'scanner',
+                mobileMenuOpen: false,
+                quizStarted: false,
+                quizCompleted: false,
+                currentQuestionIndex: 0,
+                chartInstance: null,
+                userPlan: "PROTOCOLO DE REESTRUCTURACIÓN FINANCIERA (Día 1 a 21)\n=======================================================\n\nDECLARACIONES DE IDENTIDAD (Lectura Mañana/Noche):\n1. El dinero es una herramienta neutra de intercambio de valor.\n2. Me doy permiso incondicional para generar riqueza ética.\n3. Suelto la lealtad inconsciente a la pobreza de mi pasado.\n\nSISTEMAS DE ACCIÓN:\n- Cada vez que pague algo, diré mentalmente: \"Gracias por este servicio/producto. Hay mucho más de donde esto vino\".\n- Automatizaré el 10% de mis ingresos hacia inversiones para forzar el crecimiento.\n- Eliminaré la queja sobre el dinero de mi vocabulario diario.\n\nAGREGAR REGLAS PERSONALES ABAJO:\n",
+                
+                tabs: [
+                    { id: 'scanner', name: 'Escáner', icon: 'fa-solid fa-microchip' },
+                    { id: 'results', name: 'Topografía', icon: 'fa-solid fa-brain' },
+                    { id: 'toolkit', name: 'Reestructuración', icon: 'fa-solid fa-wrench' },
+                    { id: 'plan', name: 'Protocolo', icon: 'fa-solid fa-terminal' }
+                ],
+
+                categoryDefinitions: {
+                    inherited_scarcity: { 
+                        name: 'Herencia Cognitiva de Escasez', 
+                        desc: 'Lealtad subconsciente a patrones familiares de carencia. Creencia profunda de que el dinero es limitado, sucio o fuente de conflicto familiar.', 
+                        reframing: 'Mis padres me dieron la vida, pero yo elijo mi modelo financiero. La abundancia honra mi existencia.' 
+                    },
+                    value_friction: { 
+                        name: 'Fricción en la Recepción de Valor', 
+                        desc: 'Incomodidad o culpa al cobrar, recibir regalos o gastar en uno mismo. Sensación de no "merecer" la riqueza sin un sufrimiento extremo asociado.', 
+                        reframing: 'Mi nivel de ingresos es el reflejo exacto del valor que aporto a los demás. Cobrar bien es un acto de integridad.' 
+                    },
+                    zero_sum_bias: { 
+                        name: 'Sesgo de Suma Cero', 
+                        desc: 'Percepción de que la economía es un pastel fijo. Creer que para que tú ganes, alguien más tiene que perder (asocia riqueza con explotación).', 
+                        reframing: 'La riqueza se crea, no se quita. Mis ideas y soluciones expanden el pastel económico para todos.' 
+                    },
+                    fear_attachment: { 
+                        name: 'Apego Basado en el Miedo', 
+                        desc: 'Operar desde el miedo a perder en lugar del entusiasmo por ganar. Retener el dinero por pánico (avaricia paralizante) en lugar de hacerlo fluir.', 
+                        reframing: 'El dinero es energía en movimiento. Lo administro con sabiduría pero sin miedo, sabiendo que mi mente es mi mayor activo.' 
+                    }
+                },
+
+                scores: { inherited_scarcity: 0, value_friction: 0, zero_sum_bias: 0, fear_attachment: 0 },
+                maxScores: { inherited_scarcity: 0, value_friction: 0, zero_sum_bias: 0, fear_attachment: 0 },
+                calculatedScores: {},
+
+                questions: [
+                    {
+                        text: "1. Cuando eras niño, la atmósfera general en tu casa al hablar de dinero era:",
+                        options: [
+                            { text: "Tensa, se hablaba de lo que faltaba, de deudas o se asociaba con discusiones.", bias: 'inherited_scarcity', weight: 10 },
+                            { text: "Neutra o positiva. Se hablaba de oportunidades, gestión o simplemente no era un tabú doloroso.", bias: 'inherited_scarcity', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "2. Observas a una persona extremadamente rica bajar de un coche de lujo. Tu primer pensamiento, rápido e inconsciente, es:",
+                        options: [
+                            { text: "'A saber a quién habrá engañado' o 'Debe ser alguien arrogante y superficial'.", bias: 'zero_sum_bias', weight: 10 },
+                            { text: "'Debe tener un negocio de éxito' o 'Me pregunto qué problema resolvió para lograr eso'.", bias: 'zero_sum_bias', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "3. Acabas de recibir un pago inesperado o un aumento importante. Al principio te alegras, pero luego sientes:",
+                        options: [
+                            { text: "Un ligero nudo en el estómago, miedo a perderlo o la necesidad de ocultarlo para no dar envidia.", bias: 'value_friction', weight: 10 },
+                            { text: "Tranquilidad, gratitud y entusiasmo por cómo puedo invertir o disfrutar este recurso.", bias: 'value_friction', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "4. A la hora de invertir dinero en un proyecto propio, educación o en el mercado:",
+                        options: [
+                            { text: "Siento terror a equivocarme. Prefiero mantenerlo estancado en el banco perdiendo contra la inflación pero 'seguro'.", bias: 'fear_attachment', weight: 10 },
+                            { text: "Tomo riesgos calculados. Entiendo que las pérdidas temporales son el coste de aprendizaje para crecer.", bias: 'fear_attachment', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "5. Completa la frase con tu creencia más sincera: 'Para ganar mucho dinero hay que...'",
+                        options: [
+                            { text: "Trabajar de sol a sol, sacrificar tu salud, tu familia y tu vida personal.", bias: 'inherited_scarcity', weight: 10 },
+                            { text: "Crear sistemas, delegar y resolver problemas grandes para muchas personas.", bias: 'inherited_scarcity', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "6. Si tuvieras que cobrarle a un amigo o familiar por un servicio profesional excelente que le has prestado:",
+                        options: [
+                            { text: "Me daría mucha vergüenza o culpa. Seguramente se lo haría gratis o con un gran descuento.", bias: 'value_friction', weight: 10 },
+                            { text: "Le cobraría una tarifa justa. Mi tiempo y conocimiento tienen valor independientemente del vínculo.", bias: 'value_friction', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "7. ¿Sientes que el éxito financiero de otros te hace sentir pequeño o que 'queda menos' para ti?",
+                        options: [
+                            { text: "A veces sí, la competencia me genera ansiedad y envidia silenciosa.", bias: 'zero_sum_bias', weight: 10 },
+                            { text: "No, el éxito ajeno me inspira. Entiendo que la riqueza es infinita y puedo crear la mía.", bias: 'zero_sum_bias', weight: 0 }
+                        ]
+                    },
+                    {
+                        text: "8. Cuando compras algo caro pero que realmente querías o necesitabas, tu diálogo interno es:",
+                        options: [
+                            { text: "'Me duele gastar esto', 'No debería haberlo hecho', 'Espero no arrepentirme'.", bias: 'fear_attachment', weight: 10 },
+                            { text: "'Agradezco poder permitirme esto', 'El dinero que invierto vuelve a mí multiplicado'.", bias: 'fear_attachment', weight: 0 }
+                        ]
+                    }
+                ],
+
+                initApp() {
+                    this.questions.forEach(q => {
+                        let maxWeight = 0;
+                        q.options.forEach(opt => {
+                            if (opt.weight > maxWeight) maxWeight = opt.weight;
+                        });
+                        this.maxScores[q.options[0].bias] += maxWeight;
+                    });
+
+                    const savedData = localStorage.getItem('neuroWealthData');
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+                        this.calculatedScores = parsed.scores || {};
+                        this.userPlan = parsed.plan || this.userPlan;
+                        if (Object.keys(this.calculatedScores).length > 0) {
+                            this.quizCompleted = true;
+                            this.currentTab = 'results';
+                            setTimeout(() => this.renderRadarChart(), 100);
+                        }
+                    }
+
+                    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        this.isDarkMode = true;
+                    } else {
+                        this.isDarkMode = false;
+                    }
+                },
+
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    localStorage.theme = this.isDarkMode ? 'dark' : 'light';
+                    if (this.currentTab === 'results' && this.quizCompleted) {
+                        setTimeout(() => this.renderRadarChart(), 50); 
+                    }
+                },
+
+                changeTab(tabId) {
+                    this.currentTab = tabId;
+                    if (tabId === 'results' && this.quizCompleted) {
+                        setTimeout(() => this.renderRadarChart(), 50);
+                    }
+                },
+
+                startQuiz() {
+                    this.quizStarted = true;
+                    this.currentQuestionIndex = 0;
+                    Object.keys(this.scores).forEach(k => this.scores[k] = 0);
+                },
+
+                selectAnswer(option) {
+                    this.scores[option.bias] += option.weight;
+                    
+                    if (this.currentQuestionIndex < this.questions.length - 1) {
+                        this.currentQuestionIndex++;
+                    } else {
+                        this.finishQuiz();
+                    }
+                },
+
+                finishQuiz() {
+                    this.quizCompleted = true;
+                    Object.keys(this.scores).forEach(key => {
+                        const max = this.maxScores[key];
+                        this.calculatedScores[key] = max > 0 ? Math.round((this.scores[key] / max) * 100) : 0;
+                        if(this.calculatedScores[key] === 0) this.calculatedScores[key] = 5; // Visual baseline
+                    });
+                    this.saveData();
+                    this.changeTab('results');
+                },
+
+                resetQuiz() {
+                    localStorage.removeItem('neuroWealthData');
+                    this.quizCompleted = false;
+                    this.quizStarted = false;
+                    this.currentQuestionIndex = 0;
+                    this.calculatedScores = {};
+                    Object.keys(this.scores).forEach(k => this.scores[k] = 0);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                saveData() {
+                    localStorage.setItem('neuroWealthData', JSON.stringify({
+                        scores: this.calculatedScores,
+                        plan: this.userPlan
+                    }));
+                },
+
+                renderRadarChart() {
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                    }
+                    const ctx = document.getElementById('mindsetRadarChart').getContext('2d');
+                    
+                    const labels = Object.keys(this.calculatedScores).map(k => this.categoryDefinitions[k].name);
+                    const data = Object.values(this.calculatedScores);
+                    
+                    const textColor = this.isDarkMode ? '#e2e8f0' : '#475569';
+                    const gridColor = this.isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Fricción Cognitiva (%)',
+                                data: data,
+                                backgroundColor: 'rgba(139, 92, 246, 0.3)', // neuro-500 alpha
+                                borderColor: 'rgba(139, 92, 246, 1)',
+                                pointBackgroundColor: 'rgba(16, 185, 129, 1)', // wealth-500
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 2,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    angleLines: { color: gridColor },
+                                    grid: { color: gridColor },
+                                    pointLabels: {
+                                        color: textColor,
+                                        font: { family: 'Inter', size: 11, weight: '600' }
+                                    },
+                                    ticks: { display: false, min: 0, max: 100 }
+                                }
+                            },
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                },
+
+                getSeverityColor(score) {
+                    if (score >= 70) return 'bg-red-500';
+                    if (score >= 40) return 'bg-orange-400';
+                    return 'bg-wealth-500';
+                },
+
+                getSeverityBg(score) {
+                    if (score >= 70) return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400';
+                    if (score >= 40) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400';
+                    return 'bg-wealth-100 text-wealth-800 dark:bg-wealth-900/40 dark:text-wealth-400';
+                },
+
+                getPersonalizedRuleSuggestion() {
+                    if(!this.quizCompleted) return "";
+                    let maxBias = Object.keys(this.calculatedScores).reduce((a, b) => this.calculatedScores[a] > this.calculatedScores[b] ? a : b);
+                    
+                    const rules = {
+                        inherited_scarcity: "Tu bloqueo principal proviene de guiones familiares. Tarea: Escribe una carta perdonando a tus padres por su mentalidad financiera y quémala. Declara tu independencia económica cognitiva.",
+                        value_friction: "Sientes culpa al recibir. Tarea: Durante 21 días, cada vez que recibas dinero, un regalo o un halago, solo puedes decir 'Gracias, lo recibo y lo agradezco', sin justificarte ni achicarte.",
+                        zero_sum_bias: "Tienes resentimiento inconsciente hacia la riqueza. Tarea: Cada vez que veas a alguien exitoso, fuérzate a pensar 'Me alegro por él/ella. Su éxito es la prueba de que es posible para mí'.",
+                        fear_attachment: "Operas desde la avaricia y el miedo a perder. Tarea: Practica el flujo. Dona una pequeña cantidad de dinero o invita un café a alguien esta semana sintiendo que 'siempre hay más de donde vino'."
+                    };
+
+                    return rules[maxBias] || "Inicia tu reprogramación leyendo tus declaraciones diarias en voz alta cada mañana.";
+                },
+
+                exportPlan() {
+                    this.saveData(); 
+                    const blob = new Blob([this.userPlan], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    const date = new Date().toISOString().split('T')[0];
+                    link.download = `NeuroWealth_Protocolo_${date}.txt`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
