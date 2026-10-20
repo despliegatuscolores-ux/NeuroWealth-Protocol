@@ -4,7 +4,7 @@ La diferencia entre la libertad financiera y el estancamiento crónico rara vez 
 
 Utilizando principios de neuroplasticidad, psicología conductual y reencuadre cognitivo (PNL), esta herramienta permite al usuario auditar su "código fuente" financiero y establecer un protocolo de sanación y abundancia en 21 días.
 
-🔗 **[Prueba el protocolo en vivo aquí] (AQUÍ_PON_TU_ENLACE_DE_GITHUB_PAGES)**
+🔗 **[Prueba el protocolo en vivo aquí] https://despliegatuscolores-ux.github.io/NeuroWealth-Protocol/**
 
 ---
 
